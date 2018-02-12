@@ -12,16 +12,22 @@ buildscript {
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 19
+    compileSdkVersion 26
     buildToolsVersion "26.0.2"
 
     defaultConfig {
-        minSdkVersion 18
-        targetSdkVersion 18
+        minSdkVersion 19
+        targetSdkVersion 26
         versionCode 2
         versionName "1.0.0-SNAPSHOT"
         applicationId "com.example"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+        unitTests.returnDefaultValues = true
     }
 
     packagingOptions {
@@ -29,10 +35,9 @@ android {
     }
 }
 
-def powerMockVersion =  '1.6.5'
+def powerMockVersion =  '1.6.4'
 
 dependencies {
-    //implementation 'com.google.android.gms:play-services-nearby:11.6.0'
 
     repositories {
         mavenCentral()
@@ -40,7 +45,8 @@ dependencies {
         jcenter()
     }
 
-    implementation 'com.android.support:support-v4:19.1.0'
+    implementation 'com.android.support:support-v4:26.0.1'
+    implementation 'com.android.support:appcompat-v7:26.0.1'
 
 
     compile 'com.google.android.gms:play-services-nearby:11.8.0'
@@ -49,12 +55,8 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.0')
     androidTestCompile('com.android.support.test:testing-support-lib:0.1')
 
-    // Robolectric
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.hamcrest:hamcrest-core:1.1'
-    testCompile 'org.hamcrest:hamcrest-library:1.1'
-    testCompile 'org.hamcrest:hamcrest-integration:1.1'
-    testCompile 'org.robolectric:robolectric:3.0-rc3'
+    testImplementation "org.robolectric:robolectric:3.5"
+
     //testImplementation "org.robolectric:robolectric:3.2"
 
     // PowerMock

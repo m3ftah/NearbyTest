@@ -4,12 +4,19 @@
           android:versionName="1.0.0-SNAPSHOT"
           package="com.example">
 
-    <application android:name=".DeckardApplication">
-        <activity android:name=".activity.DeckardActivity" android:screenOrientation="portrait">
+    <application
+        android:name=".DeckardApplication"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+        <activity android:name=".activity.DeckardActivity" android:screenOrientation="portrait">
         </activity>
     </application>
 </manifest>
