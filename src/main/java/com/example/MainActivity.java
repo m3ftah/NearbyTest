@@ -22,6 +22,7 @@ import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback;
 import com.google.android.gms.nearby.connection.ConnectionResolution;
 import com.google.android.gms.nearby.connection.ConnectionsClient;
+import com.google.android.gms.nearby.connection.ConnectionsStatusCodes;
 import com.google.android.gms.nearby.connection.DiscoveredEndpointInfo;
 import com.google.android.gms.nearby.connection.DiscoveryOptions;
 import com.google.android.gms.nearby.connection.EndpointDiscoveryCallback;
@@ -30,6 +31,8 @@ import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate.Status;
 import com.google.android.gms.nearby.connection.Strategy;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -51,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
   private static final Strategy STRATEGY = Strategy.P2P_STAR;
 
-  private enum GameChoice {
+  public enum GameChoice {
     ROCK,
     PAPER,
     SCISSORS;
@@ -92,11 +95,14 @@ public class MainActivity extends AppCompatActivity {
       new PayloadCallback() {
         @Override
         public void onPayloadReceived(String endpointId, Payload payload) {
-          opponentChoice = GameChoice.valueOf(new String(payload.asBytes(), UTF_8));
+          String str = new String(payload.asBytes(), UTF_8);
+          opponentChoice = GameChoice.valueOf(str);
+          Log.i(TAG,"received : " + str);
         }
 
         @Override
         public void onPayloadTransferUpdate(String endpointId, PayloadTransferUpdate update) {
+          Log.i(TAG,"onPayloadTransferUpdate" + endpointId + " : " +update.getStatus());
           if (update.getStatus() == Status.SUCCESS && myChoice != null && opponentChoice != null) {
             finishRound();
           }
@@ -113,7 +119,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onEndpointLost(String endpointId) {}
+        public void onEndpointLost(String endpointId) {
+
+          Log.i(TAG, "onEndpointLost: endpoint Lost");
+        }
       };
 
   // Callbacks for connections to other devices
@@ -259,9 +268,25 @@ public class MainActivity extends AppCompatActivity {
 
   /** Broadcasts our presence using Nearby Connections so other players can find us. */
   private void startAdvertising() {
-    // Note: Advertising may fail. To keep this demo simple, we don't handle failures.
+
     connectionsClient.startAdvertising(
-        codeName, getPackageName(), connectionLifecycleCallback, new AdvertisingOptions(STRATEGY));
+        codeName, getPackageName(), connectionLifecycleCallback, new AdvertisingOptions(STRATEGY)).addOnSuccessListener(
+          new OnSuccessListener<Void>() {
+          @Override
+          public void onSuccess(Void unusedResult) {
+            // We're advertising!
+            Log.i(TAG,"startAdvertising onSuccess");
+          }
+        })
+        .addOnFailureListener(
+          new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+              // We were unable to start advertising.
+              Log.e(TAG,"startAdvertising Failed : " + e.getMessage());
+            }
+          });
+    //getResult().equals(ConnectionsStatusCodes.);
   }
 
   /** Wipes all game state and updates the UI accordingly. */
