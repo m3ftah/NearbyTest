@@ -21,10 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.internal.verification.VerificationModeFactory;
 import org.powermock.api.mockito.PowerMockito;
-import org.powermock.api.support.membermodification.MemberMatcher;
-import org.powermock.api.support.membermodification.MemberModifier;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.rule.PowerMockRule;
@@ -34,29 +31,28 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.ShadowLog;
 
 import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
-import static org.powermock.api.support.membermodification.MemberMatcher.constructor;
-import static org.powermock.api.support.membermodification.MemberMatcher.method;
-import static org.powermock.api.support.membermodification.MemberModifier.suppress;
+
+/**
+ * Created by lakhdar on 2/12/2018.
+ */
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 18, shadows = {DeckardActivityTest.ShadowLog2.class})
+@Config(constants = BuildConfig.class, sdk = 18, shadows = {MainActivityTest.ShadowLog2.class})
 @PowerMockIgnore({ "org.mockito.*", "org.robolectric.*", "android.*" })
 @PrepareForTest({Nearby.class})
-public class DeckardActivityTest{
-
+public class MainActivityTest {
 
     @Rule
     public PowerMockRule rule = new PowerMockRule();
 
     public MainActivity activity;
 
-    public ConnectionsClient2 connectionsClient;
+    public ConnectionsClientShadow cShadow;
 
 
     @Implements(Log.class)
@@ -65,53 +61,29 @@ public class DeckardActivityTest{
             System.out.println("[" + tag + "] " + msg);
         }
     }
-/*    @Implements(ConnectionsClient.class)
-    public static class ConnectionsClientShadow{
-        public static void i(String tag, String msg) {
-            System.out.println("[" + tag + "] " + msg);
-        }
-    }*/
-
-
-    @Test
-    public void testSomething() throws Exception {
-        assertTrue(Robolectric.buildActivity(DeckardActivity.class).create().get() != null);
-    }
 
 
     @Before
     public void setUp() {
-
-        Log.i("LogTest", "log message");
-
-        PowerMockito.mockStatic(Nearby.class);
-
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
         ActivityController<MainActivity> activityController = Robolectric.buildActivity(MainActivity.class, intent);
         activity = activityController.get();
         assertNotNull(activity);
 
-
-
-        MemberModifier.suppress(MemberMatcher.constructorsDeclaredIn(ConnectionsClient2.class));
-
-        connectionsClient = new ConnectionsClient2()
+        ConnectionsClientShadow.prepare();
+        this.cShadow = new ConnectionsClientShadow()
+                .setActivity(activity)
                 .setOpponent("GALAXY_A5_2017",
                         ";lkdasfj;asjfdo[",
                         "ENDPOINT_1"
                 );
 
 
-        Mockito.when(Nearby.getConnectionsClient(activity)).thenReturn(connectionsClient);
-
-
         //Go through the ActivityLifeCycle using the controller
         activityController.create().start().resume().get();
 
-        /// Verify that our Mock has been called inside onCreate method in MainActivity.
-        PowerMockito.verifyStatic(VerificationModeFactory.times(1));
-        Nearby.getConnectionsClient(activity);
+        ConnectionsClientShadow.verify();
 
     }
 
@@ -131,16 +103,16 @@ public class DeckardActivityTest{
                 context.getString(R.string.status_searching)
                 .equals(status.getText().toString()));
 
-        connectionsClient.sendEndpoint("NewEndpoint");
+        cShadow.sendEndpoint("NewEndpoint");
         //When connected
-        connectionsClient.sendConnectionResult(true);
+        cShadow.sendConnectionResult(true);
 
         assertTrue("Expected to find " + context.getString(R.string.status_searching),
                 context.getString(R.string.status_connected)
                         .equals(status.getText().toString()));
 
         //When disconnected
-        connectionsClient.disconnect();
+        cShadow.disconnect();
 
 
         assertTrue("Expected to find " + context.getString(R.string.status_disconnected),
