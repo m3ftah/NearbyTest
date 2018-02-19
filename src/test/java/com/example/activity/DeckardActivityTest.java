@@ -1,17 +1,16 @@
 package com.example.activity;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.test.mock.MockContext;
+import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.example.BuildConfig;
 import com.example.MainActivity;
-import com.google.android.gms.common.api.Api;
+import com.example.R;
 import com.google.android.gms.nearby.Nearby;
-import com.google.android.gms.nearby.connection.AdvertisingOptions;
-import com.google.android.gms.nearby.connection.ConnectionInfo;
-import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback;
 import com.google.android.gms.nearby.connection.ConnectionsClient;
 import com.google.android.gms.nearby.connection.DiscoveredEndpointInfo;
 import com.google.android.gms.nearby.connection.DiscoveryOptions;
@@ -23,8 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.api.support.membermodification.MemberMatcher;
 import org.powermock.api.support.membermodification.MemberModifier;
@@ -33,8 +30,11 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.rule.PowerMockRule;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implements;
+import org.robolectric.shadows.ShadowLog;
 
 import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -45,9 +45,9 @@ import static org.powermock.api.support.membermodification.MemberMatcher.method;
 import static org.powermock.api.support.membermodification.MemberModifier.suppress;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 18)
+@Config(constants = BuildConfig.class, sdk = 18, shadows = {DeckardActivityTest.ShadowLog2.class})
 @PowerMockIgnore({ "org.mockito.*", "org.robolectric.*", "android.*" })
-@PrepareForTest({Nearby.class, ConnectionsClient.class})
+@PrepareForTest({Nearby.class})
 public class DeckardActivityTest{
 
 
@@ -59,6 +59,20 @@ public class DeckardActivityTest{
     public ConnectionsClient2 connectionsClient;
 
 
+    @Implements(Log.class)
+    public static class ShadowLog2 extends org.robolectric.shadows.ShadowLog{
+        public static void i(String tag, String msg) {
+            System.out.println("[" + tag + "] " + msg);
+        }
+    }
+/*    @Implements(ConnectionsClient.class)
+    public static class ConnectionsClientShadow{
+        public static void i(String tag, String msg) {
+            System.out.println("[" + tag + "] " + msg);
+        }
+    }*/
+
+
     @Test
     public void testSomething() throws Exception {
         assertTrue(Robolectric.buildActivity(DeckardActivity.class).create().get() != null);
@@ -67,6 +81,8 @@ public class DeckardActivityTest{
 
     @Before
     public void setUp() {
+
+        Log.i("LogTest", "log message");
 
         PowerMockito.mockStatic(Nearby.class);
 
@@ -78,15 +94,13 @@ public class DeckardActivityTest{
 
 
 
-        PowerMockito.mock(ConnectionsClient.class);
-
-
         MemberModifier.suppress(MemberMatcher.constructorsDeclaredIn(ConnectionsClient2.class));
 
-        //suppress(constructor(ConnectionsClient.class,Activity.class,Mockito.any(Object.class), Mockito.any(Object.class)));
-        connectionsClient = new ConnectionsClient2(null,null,null);
-
-
+        connectionsClient = new ConnectionsClient2()
+                .setOpponent("GALAXY_A5_2017",
+                        ";lkdasfj;asjfdo[",
+                        "ENDPOINT_1"
+                );
 
 
         Mockito.when(Nearby.getConnectionsClient(activity)).thenReturn(connectionsClient);
@@ -103,22 +117,35 @@ public class DeckardActivityTest{
 
 
     @Test
-    public void testCallback(){
-        String s = "example";
-        String s2 = "example2";
-        String s3 = "example3";
-        Boolean b  = true;
-
-        ConnectionInfo connectionInfo = new ConnectionInfo(s2,s3,b);
-        ConnectionLifecycleCallback connectionLifecycleCallback = Mockito.mock(ConnectionLifecycleCallback.class);
+    public void testConnection(){
+        final Context context = RuntimeEnvironment.application;
 
         View view = Mockito.mock(View.class);
+
+        //Searching oppenents
         activity.findOpponent(view);
 
-        connectionLifecycleCallback.onConnectionInitiated(s,connectionInfo);
+        TextView status = (TextView) activity.findViewById(R.id.status);
+        assertNotNull("TextView could not be found", status);
+        assertTrue("Expected to find " + context.getString(R.string.status_searching),
+                context.getString(R.string.status_searching)
+                .equals(status.getText().toString()));
+
+        connectionsClient.sendEndpoint("NewEndpoint");
+        //When connected
+        connectionsClient.sendConnectionResult(true);
+
+        assertTrue("Expected to find " + context.getString(R.string.status_searching),
+                context.getString(R.string.status_connected)
+                        .equals(status.getText().toString()));
+
+        //When disconnected
+        connectionsClient.disconnect();
 
 
-        //Mockito.verify(connectionsClient.acceptConnection(Mockito.anyString(), Mockito.any(PayloadCallback.class)));
+        assertTrue("Expected to find " + context.getString(R.string.status_disconnected),
+                context.getString(R.string.status_disconnected)
+                        .equals(status.getText().toString()));
 
     }
 

@@ -4,10 +4,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.Api;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback;
+import com.google.android.gms.nearby.connection.ConnectionResolution;
 import com.google.android.gms.nearby.connection.ConnectionsClient;
 import com.google.android.gms.nearby.connection.DiscoveredEndpointInfo;
 import com.google.android.gms.nearby.connection.DiscoveryOptions;
@@ -16,6 +19,8 @@ import com.google.android.gms.nearby.connection.Payload;
 import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.tasks.Task;
 
+import junit.framework.Assert;
+
 import java.util.List;
 
 /**
@@ -23,28 +28,55 @@ import java.util.List;
  */
 
 public class ConnectionsClient2 extends ConnectionsClient {
-    private static final String endpointName = "GALAXY_A5_2017";
-    private static final String authenticationToken = ";lkdasfj;asjfdo[";
-    private static final Boolean isIncomingConnection = true;
-    private static final String endpointId = "ENDPOINT_1";
-    private static ConnectionLifecycleCallback connectionLifecycleCallback;
-    private static EndpointDiscoveryCallback endpointDiscoveryCallback;
+    private String endpointName;
+    private String authenticationToken;
+    private Boolean isIncomingConnection;
+    private String endpointId;
+    private ConnectionLifecycleCallback connectionLifecycleCallback;
+    private EndpointDiscoveryCallback endpointDiscoveryCallback;
+    private boolean advertising = false;
 
-    protected ConnectionsClient2(Activity activity, Api<Api.ApiOptions.NoOptions> api, zza zza) {
-        super(activity, api, zza);
+    public void sendConnectionResult(Boolean success){
+        int state = success ? -1 : 1;
+        ConnectionResolution connectionResolution = new ConnectionResolution(new Status(state));
+        connectionLifecycleCallback.onConnectionResult(endpointId,connectionResolution);
     }
+
+    public void disconnect(){
+        this.connectionLifecycleCallback.onDisconnected(this.endpointId);
+    }
+    public void sendEndpoint(String endpointId){
+        DiscoveredEndpointInfo discoveredEndpointInfo = new DiscoveredEndpointInfo(endpointId,"emptyString");
+        this.endpointDiscoveryCallback.onEndpointFound(endpointId,discoveredEndpointInfo);
+    }
+
+    public ConnectionsClient2(){
+        super(null,null,null);
+    }
+    public ConnectionsClient2 setOpponent(String endpointName, String authenticationToken,String endpointId){
+        this.endpointName = endpointName;
+        this.authenticationToken = authenticationToken;
+        this.endpointId = endpointId;
+        return this;
+    }
+
 
     @Override
     public Task<Void> startAdvertising(@NonNull String s, @NonNull String s1, @NonNull ConnectionLifecycleCallback connectionLifecycleCallback, @NonNull AdvertisingOptions advertisingOptions) {
+        this.advertising = true;
         this.connectionLifecycleCallback = connectionLifecycleCallback;
-        ConnectionInfo connectionInfo = new ConnectionInfo(endpointName,authenticationToken,isIncomingConnection);
+        ConnectionInfo connectionInfo = new ConnectionInfo(endpointName,authenticationToken,true);
         connectionLifecycleCallback.onConnectionInitiated(endpointId,connectionInfo);
+
+
         return null;
     }
 
     @Override
-    public void stopAdvertising() {
-
+    public void stopAdvertising(){
+        Assert.assertTrue("Must call startAdvertising() before calling stopAdvertising()",this.advertising);
+        this.advertising = false;
+        //else throw new Exception("Stop Advertising called while not advertising.");
     }
 
     @Override
