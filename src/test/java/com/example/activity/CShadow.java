@@ -3,7 +3,6 @@ package com.example.activity;
 import android.app.Activity;
 import android.support.annotation.NonNull;
 
-import com.example.CC.AdvertisingController;
 import com.example.CC.CAssertions;
 import com.example.CC.CController;
 import com.google.android.gms.nearby.Nearby;
@@ -31,6 +30,9 @@ import java.util.List;
  */
 
 public class CShadow extends ConnectionsClient {
+
+    public static String TAG = "CShadow";
+
     @Rule
     public PowerMockRule rule = new PowerMockRule();
 
@@ -78,9 +80,7 @@ public class CShadow extends ConnectionsClient {
 
     @Override
     public void stopAdvertising(){
-        //cAssertion.assertStopAdvertising();
         cController.getcAdvertising().stopAdvertising();
-        //else throw new Exception("Stop Advertising called while not advertising.");
     }
 
     @Override
@@ -92,7 +92,7 @@ public class CShadow extends ConnectionsClient {
 
     @Override
     public void stopDiscovery() {
-
+        cController.getcDiscovery().stopDiscovery();
     }
 
     @Override
@@ -132,6 +132,6 @@ public class CShadow extends ConnectionsClient {
 
     @Override
     public void stopAllEndpoints() {
-
+        cController.disconnectAll();
     }
 }

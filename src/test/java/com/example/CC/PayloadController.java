@@ -7,6 +7,8 @@ import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.tasks.Task;
 
+import junit.framework.Assert;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -14,6 +16,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 
 public class PayloadController {
+    public static String TAG = "PayloadCtrl";
 
     private PayloadCallback payloadCallback;
     private String endpointId;
@@ -34,22 +37,33 @@ public class PayloadController {
     }
 
     public void sendPayload(String endpointId, Payload payload) {
-        if (accepting){
-            payloadCallback.onPayloadReceived(endpointId,payload);
-        }else{
-            payloadTask.getOnFailureListener().onFailure(new Exception("can't send payload when not connected"));
-        }
+        Assert.assertTrue("Must call accept connection before sending payload",this.accepting);
+        payloadCallback.onPayloadReceived(endpointId,payload);
+        String str = new String(payload.asBytes(), UTF_8);
+        Log.i(TAG,"Sending, endpointId : " + endpointId + ", payload : " + str);
+
+        //payloadTask.getOnFailureListener().onFailure(new Exception("can't send payload"));
+
     }
 
 
     public void sendPayloadTransferUpdate(String endpointId, PayloadTransferUpdate payloadTransferUpdate) {
+        Assert.assertTrue("Must call accept connection before sending payload",this.accepting);
+        Log.i(TAG,"PayloadTransferUpdate, endpointId : " + endpointId);
         payloadCallback.onPayloadTransferUpdate(endpointId,payloadTransferUpdate);
     }
 
     public Task<Void> receivePayload(String endpointId, Payload payload) {
         String str = new String(payload.asBytes(), UTF_8);
-        Log.i("Test",endpointId + " : " + str);
+        Log.i(TAG,"Receiving, endpointId : " + endpointId + ", payload : " + str);
         this.sendpayloadTask = new CController.TaskCC();
         return this.sendpayloadTask;
+    }
+    public void disconnect(String endpointId){
+        this.accepting = false;
+    }
+
+    public void disconnectAll() {
+        disconnect(endpointId);//TODO Disconnect ALl opponents
     }
 }

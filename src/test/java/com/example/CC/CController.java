@@ -4,14 +4,6 @@ import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.nearby.connection.AdvertisingOptions;
-import com.google.android.gms.nearby.connection.ConnectionInfo;
-import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback;
-import com.google.android.gms.nearby.connection.ConnectionResolution;
-import com.google.android.gms.nearby.connection.DiscoveredEndpointInfo;
-import com.google.android.gms.nearby.connection.EndpointDiscoveryCallback;
-import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -23,10 +15,11 @@ import java.util.concurrent.Executor;
  */
 
 public class CController {
+    public static String TAG = "CCtrl";
 
 
-    private DiscoveryController cDiscovery;
-    private AdvertisingController cAdvertising;
+    private EndpointDiscoveryController cDiscovery;
+    private ConnectionLifecycleController cAdvertising;
 
     public PayloadController getPayloadController() {
         return payloadController;
@@ -34,19 +27,40 @@ public class CController {
 
     private PayloadController payloadController;
 
-    public DiscoveryController getcDiscovery() {
+    public EndpointDiscoveryController getcDiscovery() {
         return cDiscovery;
     }
 
-    public AdvertisingController getcAdvertising() {
+    public ConnectionLifecycleController getcAdvertising() {
         return cAdvertising;
     }
 
 
     public CController(){
-        this.cAdvertising = new AdvertisingController();
-        this.cDiscovery = new DiscoveryController();
+        this.cAdvertising = new ConnectionLifecycleController();
+        this.cDiscovery = new EndpointDiscoveryController();
         this.payloadController = new PayloadController();
+    }
+
+    public void checkStopped() {
+        this.cAdvertising.checkStopped();
+        this.cDiscovery.checkStopped();
+    }
+
+    public void checkResumed() {
+        this.cAdvertising.checkResumed();
+        this.cDiscovery.checkResumed();
+    }
+
+    public void disconnect(String endpointId) {
+        this.cAdvertising.disconnect(endpointId);
+        this.cDiscovery.disconnect(endpointId);
+        this.payloadController.disconnect(endpointId);
+    }
+    public void disconnectAll() {
+        this.cAdvertising.disconnectAll();
+        this.cDiscovery.disconnectAll();
+        this.payloadController.disconnectAll();
     }
 
 

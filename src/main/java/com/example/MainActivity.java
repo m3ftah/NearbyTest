@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPayloadTransferUpdate(String endpointId, PayloadTransferUpdate update) {
-          Log.i(TAG,"onPayloadTransferUpdate" + endpointId + " : " +update.getStatus());
+          Log.i(TAG,"onPayloadTransferUpdate " + endpointId + " : " +update.getStatus());
           if (update.getStatus() == Status.SUCCESS && myChoice != null && opponentChoice != null) {
             finishRound();
           }
@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
         requestPermissions(REQUIRED_PERMISSIONS, REQUEST_CODE_REQUIRED_PERMISSIONS);
       }
     } //else
-      //startAdvertising();
+    startAdvertising();
   }
 
   @Override
