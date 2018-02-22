@@ -7,6 +7,7 @@ import com.google.android.gms.nearby.connection.AdvertisingOptions;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback;
 import com.google.android.gms.nearby.connection.ConnectionResolution;
+import com.google.android.gms.nearby.connection.ConnectionsStatusCodes;
 
 import junit.framework.Assert;
 
@@ -74,8 +75,8 @@ public class ConnectionLifecycleController {
         Assert.assertTrue("The App must received advertise result first",this.sentAdvertise);
         Assert.assertTrue("The App must initiate/accept connection first",this.connectionInitiated);
         Assert.assertFalse("The App is already connected",this.connected);
-        int state = success ? -1 : 1;
-        ConnectionResolution connectionResolution = new ConnectionResolution(new Status(state));
+        int status = success ? ConnectionsStatusCodes.STATUS_OK : ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED;
+        ConnectionResolution connectionResolution = new ConnectionResolution(new Status(status));
         connectionLifecycleCallback.onConnectionResult(endpointId,connectionResolution);
         //TODO check if discovery and advertising are stopped
         this.connected = success;
