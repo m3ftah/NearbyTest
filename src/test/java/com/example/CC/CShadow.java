@@ -1,10 +1,8 @@
-package com.example.activity;
+package com.example.CC;
 
 import android.app.Activity;
 import android.support.annotation.NonNull;
 
-import com.example.CC.CAssertions;
-import com.example.CC.CController;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
 import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback;
@@ -15,13 +13,11 @@ import com.google.android.gms.nearby.connection.Payload;
 import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.tasks.Task;
 
-import org.junit.Rule;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.api.support.membermodification.MemberMatcher;
 import org.powermock.api.support.membermodification.MemberModifier;
-import org.powermock.modules.junit4.rule.PowerMockRule;
 
 import java.util.List;
 
@@ -33,13 +29,9 @@ public class CShadow extends ConnectionsClient {
 
     public static String TAG = "CShadow";
 
-    @Rule
-    public PowerMockRule rule = new PowerMockRule();
-
 
     private CController cController;
     private static Activity activity;
-    private CAssertions cAssertion;
 
 
     public static void prepare(){
@@ -56,7 +48,6 @@ public class CShadow extends ConnectionsClient {
     public CShadow setActivity(Activity activity){
         CShadow.activity = activity;
         this.cController = new CController();
-        this.cAssertion = new CAssertions(cController);
         PowerMockito.mockStatic(Nearby.class);
         Mockito.when(Nearby.getConnectionsClient(activity)).thenReturn(this);
         return this;
@@ -75,29 +66,31 @@ public class CShadow extends ConnectionsClient {
                                        @NonNull ConnectionLifecycleCallback connectionLifecycleCallback,
                                        @NonNull AdvertisingOptions advertisingOptions) {
         //cAssertion.assertStartAdvertising();
-        return cController.getcAdvertising().update(name,serviceId,connectionLifecycleCallback,advertisingOptions);
+        return cController.getCLifecycleCtrl().update(name,serviceId,connectionLifecycleCallback,advertisingOptions);
     }
 
     @Override
     public void stopAdvertising(){
-        cController.getcAdvertising().stopAdvertising();
+        cController.getCLifecycleCtrl().stopAdvertising();
     }
 
     @Override
     public Task<Void> startDiscovery(@NonNull String serviceId,
                                      @NonNull EndpointDiscoveryCallback endpointDiscoveryCallback,
                                      @NonNull DiscoveryOptions discoveryOptions) {
-        return cController.getcDiscovery().update(serviceId, endpointDiscoveryCallback,discoveryOptions);
+        return cController.getEndpointDiscoveryCtrl().update(serviceId, endpointDiscoveryCallback,discoveryOptions);
     }
 
     @Override
     public void stopDiscovery() {
-        cController.getcDiscovery().stopDiscovery();
+        cController.getEndpointDiscoveryCtrl().stopDiscovery();
     }
 
     @Override
-    public Task<Void> requestConnection(@NonNull String s, @NonNull String s1, @NonNull ConnectionLifecycleCallback connectionLifecycleCallback) {
-        return null;
+    public Task<Void> requestConnection(@NonNull String endpointName,
+                                        @NonNull String endpointId,
+                                        @NonNull ConnectionLifecycleCallback connectionLifecycleCallback) {//TODO requestConnection
+        return cController.getCLifecycleCtrl().requestConnection(endpointName,endpointId,connectionLifecycleCallback);
     }
 
     @Override
@@ -106,7 +99,7 @@ public class CShadow extends ConnectionsClient {
     }
 
     @Override
-    public Task<Void> rejectConnection(@NonNull String s) {
+    public Task<Void> rejectConnection(@NonNull String s) {//TODO reject Connection
         return null;
     }
 
@@ -116,17 +109,17 @@ public class CShadow extends ConnectionsClient {
     }
 
     @Override
-    public Task<Void> sendPayload(@NonNull List<String> list, @NonNull Payload payload) {
+    public Task<Void> sendPayload(@NonNull List<String> list, @NonNull Payload payload) {//TODO Broadcast payload
         return null;
     }
 
     @Override
-    public Task<Void> cancelPayload(long l) {
+    public Task<Void> cancelPayload(long l) {//todo Cancel payload
         return null;
     }
 
     @Override
-    public void disconnectFromEndpoint(@NonNull String s) {
+    public void disconnectFromEndpoint(@NonNull String s) {//Todo Disconnect from specific endpoint
 
     }
 

@@ -18,8 +18,8 @@ public class CController {
     public static String TAG = "CCtrl";
 
 
-    private EndpointDiscoveryController cDiscovery;
-    private ConnectionLifecycleController cAdvertising;
+    private EndpointDiscoveryController endpointDiscoveryCtrl;
+    private ConnectionLifecycleController cLifecycleCtrl;
 
     public PayloadController getPayloadController() {
         return payloadController;
@@ -27,39 +27,39 @@ public class CController {
 
     private PayloadController payloadController;
 
-    public EndpointDiscoveryController getcDiscovery() {
-        return cDiscovery;
+    public EndpointDiscoveryController getEndpointDiscoveryCtrl() {
+        return endpointDiscoveryCtrl;
     }
 
-    public ConnectionLifecycleController getcAdvertising() {
-        return cAdvertising;
+    public ConnectionLifecycleController getCLifecycleCtrl() {
+        return cLifecycleCtrl;
     }
 
 
     public CController(){
-        this.cAdvertising = new ConnectionLifecycleController();
-        this.cDiscovery = new EndpointDiscoveryController();
+        this.cLifecycleCtrl = new ConnectionLifecycleController();
+        this.endpointDiscoveryCtrl = new EndpointDiscoveryController();
         this.payloadController = new PayloadController();
     }
 
     public void checkStopped() {
-        this.cAdvertising.checkStopped();
-        this.cDiscovery.checkStopped();
+        this.cLifecycleCtrl.checkStopped();
+        this.endpointDiscoveryCtrl.checkStopped();
     }
 
     public void checkResumed() {
-        this.cAdvertising.checkResumed();
-        this.cDiscovery.checkResumed();
+        this.cLifecycleCtrl.checkResumed();
+        this.endpointDiscoveryCtrl.checkResumed();
     }
 
     public void disconnect(String endpointId) {
-        this.cAdvertising.disconnect(endpointId);
-        this.cDiscovery.disconnect(endpointId);
+        this.cLifecycleCtrl.disconnect(endpointId);
+        this.endpointDiscoveryCtrl.disconnect(endpointId);
         this.payloadController.disconnect(endpointId);
     }
     public void disconnectAll() {
-        this.cAdvertising.disconnectAll();
-        this.cDiscovery.disconnectAll();
+        this.cLifecycleCtrl.disconnectAll();
+        this.endpointDiscoveryCtrl.disconnectAll();
         this.payloadController.disconnectAll();
     }
 

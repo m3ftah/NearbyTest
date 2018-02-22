@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.example.BuildConfig;
 import com.example.CC.CController;
+import com.example.CC.CShadow;
 import com.example.MainActivity;
 import com.example.R;
 import com.google.android.gms.nearby.Nearby;
@@ -28,7 +29,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Implements;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static junit.framework.Assert.assertNotNull;
@@ -109,18 +109,17 @@ public class MainActivityTest {
                 context.getString(R.string.status_searching)
                         .equals(status.getText().toString()));
 
-        cController.getcAdvertising().sendAdvertisingResult(true);
+        cController.getCLifecycleCtrl().sendAdvertisingResult(true);
 
-        this.myEndpointId = cController.getcAdvertising().getMyEdpointId();
+        this.myEndpointId = cController.getCLifecycleCtrl().getMyEdpointId();
 
-        cController.getcDiscovery().sendEndpoint(endpointId,serviceId,endpointName);
-
+        cController.getEndpointDiscoveryCtrl().sendEndpoint(endpointId,serviceId,endpointName);
 
         //Initiate the connection
-        cController.getcAdvertising().initiateConnection(endpointId,endpointName,auth);
+        cController.getCLifecycleCtrl().initiateConnection(endpointId,endpointName,auth);
 
         //When connected
-        cController.getcAdvertising().sendConnectionResult(true,endpointId);
+        cController.getCLifecycleCtrl().sendConnectionResult(true,endpointId);
 
         assertTrue("Expected to find " + context.getString(R.string.status_searching),
                 context.getString(R.string.status_connected)
@@ -199,7 +198,7 @@ public class MainActivityTest {
 
     @After
     public void tearDown(){
-        //cController.getcDiscovery().sendEndpointLost(endpointId);
+        //cController.getEndpointDiscoveryCtrl().sendEndpointLost(endpointId);
         activityController.pause().stop();
         cController.checkStopped();
     }

@@ -8,6 +8,7 @@ import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback;
 import com.google.android.gms.nearby.connection.ConnectionResolution;
 import com.google.android.gms.nearby.connection.ConnectionsStatusCodes;
+import com.google.android.gms.tasks.Task;
 
 import junit.framework.Assert;
 
@@ -20,6 +21,7 @@ public class ConnectionLifecycleController {
 
     private ConnectionLifecycleCallback connectionLifecycleCallback;
     private CController.TaskCC advertisingTask;
+    private CController.TaskCC requestingTask;
     private AdvertisingOptions advertisingOptions;
     private String myName;
     private String myEdpointId;
@@ -36,9 +38,11 @@ public class ConnectionLifecycleController {
 
     private boolean sentAdvertise = false;
 
+    private boolean requestingConnection = false;
+
     private String opponentId;//TODO table of opponents
 
-    public CController.TaskCC update(String name,
+    public Task<Void> update(String name,
                                      String serviceId,
                                      ConnectionLifecycleCallback connectionLifecycleCallback,
                                      AdvertisingOptions advertisingOptions) {
@@ -64,12 +68,14 @@ public class ConnectionLifecycleController {
         this.sentAdvertise = success;
     }
     public void initiateConnection(String endpointId, String endpointName, String authenticationToken){
-        Assert.assertTrue("The App must receive advertising result first",this.sentAdvertise);
+        Assert.assertTrue("The App must receive advertising result or has requested connection first",
+                this.sentAdvertise || this.requestingConnection);
         this.otherEndpointId = endpointId;
         this.otherEndpintName = endpointName;
         ConnectionInfo connectionInfo = new ConnectionInfo(endpointName,authenticationToken,true);
         connectionLifecycleCallback.onConnectionInitiated(endpointId,connectionInfo);
         this.connectionInitiated = true;
+        this.requestingConnection = false;
     }
     public void sendConnectionResult(Boolean success, String endpointId){
         Assert.assertTrue("The App must received advertise result first",this.sentAdvertise);
@@ -109,5 +115,18 @@ public class ConnectionLifecycleController {
 
     public void disconnectAll() {
         disconnect(this.otherEndpointId);//TODO disconnect all the opponent from a table
+    }
+
+    public Task<Void> requestConnection(String endpointName,
+                                        String endpointId,
+                                        ConnectionLifecycleCallback connectionLifecycleCallback) {
+        if (!requestingConnection){
+            this.requestingTask = new CController.TaskCC();
+            this.requestingConnection = true;
+        }else{
+            Log.e(TAG,"Already requested connection");
+        }
+
+        return this.requestingTask;
     }
 }
