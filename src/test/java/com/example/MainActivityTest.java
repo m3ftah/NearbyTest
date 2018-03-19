@@ -1,4 +1,4 @@
-package com.example.activity;
+package com.example;
 
 import android.content.Context;
 import android.content.Intent;
@@ -6,11 +6,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.example.BuildConfig;
 import com.example.CC.CController;
 import com.example.CC.CShadow;
-import com.example.MainActivity;
-import com.example.R;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.Payload;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
@@ -198,7 +195,7 @@ public class MainActivityTest {
 
     @After
     public void tearDown(){
-        //cController.getEndpointDiscoveryCtrl().sendEndpointLost(endpointId);
+        //cController.getEndpointDiscoveryCtrl().onEndpointLost(endpointId);
         activityController.pause().stop();
         cController.checkStopped();
     }

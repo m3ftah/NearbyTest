@@ -1,4 +1,4 @@
-package com.example.CC;
+package com.example.nearby.connections;
 
 import android.util.Log;
 
@@ -27,6 +27,13 @@ public class EndpointDiscoveryController {
     private DiscoveryOptions discoveryOptions;
     private String otherEndpointId;
 
+    private SocketController socketController;
+
+
+    public EndpointDiscoveryController(SocketController socketController) {
+        this.socketController = socketController;
+    }
+
 
     public Task<Void> update(String serviceId,
                              EndpointDiscoveryCallback endpointDiscoveryCallback,
@@ -42,12 +49,12 @@ public class EndpointDiscoveryController {
         }
         return discoveryTask;
     }
-    public void sendEndpoint(String endpointId, String serviceId, String endpointName){
+    public void onEndpointFound(String endpointId, String serviceId, String endpointName){
         Assert.assertTrue("The App must start discovery before receiving any EndpointFound",this.discovering);
         DiscoveredEndpointInfo discoveredEndpointInfo = new DiscoveredEndpointInfo(serviceId,endpointName);
         this.endpointDiscoveryCallback.onEndpointFound(endpointId,discoveredEndpointInfo);
     }
-    public void sendEndpointLost(String endpointId) {
+    public void onEndpointLost(String endpointId) {
         Assert.assertTrue("The App must start discovering before receiving any EndpointLost",this.discovering);
         this.endpointDiscoveryCallback.onEndpointLost(endpointId);
     }
@@ -59,7 +66,8 @@ public class EndpointDiscoveryController {
     }
 
     public void stopDiscovery() {
-        Assert.assertTrue("Must call startDiscovery() before calling stopDiscovery()",this.discovering);
+        if (!this.discovering) Log.e(TAG,"Must call startDiscovery() before calling stopDiscovery()");
+        else this.socketController.stopDiscovery();
         this.discovering = false;
     }
 

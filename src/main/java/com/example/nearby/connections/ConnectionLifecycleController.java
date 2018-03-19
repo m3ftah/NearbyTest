@@ -1,4 +1,4 @@
-package com.example.CC;
+package com.example.nearby.connections;
 
 import android.util.Log;
 
@@ -42,6 +42,12 @@ public class ConnectionLifecycleController {
 
     private String opponentId;//TODO table of opponents
 
+    private SocketController socketController;
+
+    public ConnectionLifecycleController(SocketController socketController) {
+        this.socketController = socketController;
+    }
+
     public Task<Void> update(String name,
                                      String serviceId,
                                      ConnectionLifecycleCallback connectionLifecycleCallback,
@@ -54,6 +60,7 @@ public class ConnectionLifecycleController {
             this.connectionLifecycleCallback = connectionLifecycleCallback;
             this.advertisingOptions = advertisingOptions;
             this.advertising = true;
+            Log.i(TAG,"start advertising");
         }else{
             advertisingTask.getOnFailureListener().onFailure(new Exception("Already advertising"));
         }
@@ -67,9 +74,9 @@ public class ConnectionLifecycleController {
         else this.advertisingTask.getOnFailureListener().onFailure(new Exception("Failed to advertise results"));
         this.sentAdvertise = success;
     }
-    public void initiateConnection(String endpointId, String endpointName, String authenticationToken){
-        Assert.assertTrue("The App must receive advertising result or has requested connection first",
-                this.sentAdvertise || this.requestingConnection);
+    public void onConnectionInitiated(String endpointId, String endpointName, String authenticationToken){
+        if (!this.sentAdvertise && !this.requestingConnection)
+            Log.e(TAG,"The App must receive advertising result or has requested connection first");
         this.otherEndpointId = endpointId;
         this.otherEndpintName = endpointName;
         ConnectionInfo connectionInfo = new ConnectionInfo(endpointName,authenticationToken,true);
@@ -77,10 +84,10 @@ public class ConnectionLifecycleController {
         this.connectionInitiated = true;
         this.requestingConnection = false;
     }
-    public void sendConnectionResult(Boolean success, String endpointId){
-        Assert.assertTrue("The App must received advertise result first",this.sentAdvertise);
-        Assert.assertTrue("The App must initiate/accept connection first",this.connectionInitiated);
-        Assert.assertFalse ("The App is already connected",this.connected);
+    public void onConnectionResult(Boolean success, String endpointId){
+        //Assert.assertTrue("The App must received advertise result first",this.sentAdvertise);
+        //Assert.assertTrue("The App must initiate/accept connection first",this.connectionInitiated);
+        //Assert.assertFalse ("The App is already connected",this.connected);
         int status = success ? ConnectionsStatusCodes.STATUS_OK : ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED;
         ConnectionResolution connectionResolution = new ConnectionResolution(new Status(status));
         connectionLifecycleCallback.onConnectionResult(endpointId,connectionResolution);
@@ -89,12 +96,15 @@ public class ConnectionLifecycleController {
         this.connectionInitiated = !success;
     }
     public void stopAdvertising() {
-        Assert.assertTrue("Must call startAdvertising() before calling stopAdvertising()",this.advertising);
+        if (!this.advertising) Log.e(TAG, "Must call startAdvertising() before calling stopAdvertising()");
+        else this.socketController.stopAdvertising();
         this.advertising = false;
     }
-    public void disconnect(String endpointId){
-        Assert.assertTrue("Can't onDisconnected if the app is not connected",this.connected);
-        this.connectionLifecycleCallback.onDisconnected(endpointId);
+    public void onDisconnected(String endpointId){
+        Log.e(TAG,"Can't onDisconnected if the app is not connected");
+        if (connected){
+            this.connectionLifecycleCallback.onDisconnected(endpointId);
+        }
         this.connected = false;
     }
     public void checkResumed(){
@@ -114,7 +124,8 @@ public class ConnectionLifecycleController {
     }
 
     public void disconnectAll() {
-        disconnect(this.otherEndpointId);//TODO onDisconnected all the opponent from a table
+        socketController.disconnectAll();
+        //onDisconnected(this.otherEndpointId);//TODO onDisconnected all the opponent from a table
     }
 
     public Task<Void> requestConnection(String endpointName,
