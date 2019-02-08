@@ -48,6 +48,7 @@ public class CShadow extends ConnectionsClient {
     public CShadow setActivity(Activity activity){
         CShadow.activity = activity;
         this.cController = new CController();
+        //Because Nearby.class is final, we force its instantiation
         PowerMockito.mockStatic(Nearby.class);
         Mockito.when(Nearby.getConnectionsClient(activity)).thenReturn(this);
         return this;

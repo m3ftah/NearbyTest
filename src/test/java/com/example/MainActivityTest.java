@@ -71,6 +71,7 @@ public class MainActivityTest {
         this.activity = activityController.get();
         assertNotNull(this.activity);
 
+        //We mock all the Nearby API here
         CShadow.prepare();
         this.cShadow = new CShadow().setActivity(this.activity);
 
