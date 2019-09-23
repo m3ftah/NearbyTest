@@ -28,6 +28,6 @@ And in `YourProject/settings.gradle` you should add:
 compile project(":NearbyTest")
 ```
 
-# Using Fougere
+# Using NearbyTest
 If you are using `NearbyTest`, please cite the following research paper:
 >Lakhdar Meftah, Romain Rouvoy, and Isabelle Chrisment. "Testing nearby peer-to-peer mobile apps at large."In Proceedings of the 6th International Conference onMobile Software Engineering and Systems, pp. 1-11. IEEE Press, 2019. ([pdf](https://hal.inria.fr/hal-02059088v1)).
